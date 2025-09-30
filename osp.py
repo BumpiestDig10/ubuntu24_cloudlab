@@ -45,8 +45,22 @@ pc.defineParameter(
 pc.defineParameter(
     "hwType", "Hardware Type",
     portal.ParameterType.NODETYPE,
-    "d760-hgpu", # Default to nvidiagh nodes.
-    longDescription="Specify a hardware type for all nodes. Clear Selection for any available type. d760-hgpu, d8545, nvidiagh, "
+    "d8545", # Default to nvidiagh nodes.
+    longDescription="Specify a hardware type for all nodes. Clear Selection for any available type. d760-hgpu, d8545, nvidiagh."
+)
+
+pc.defineParameter(
+    "coreCount", "Number of CPU Cores",
+    portal.ParameterType.INTEGER,
+    8,
+    longDescription="Number of CPU cores for the VM. Clemson Limit: 1-12."
+)
+
+pc.defineParameter(
+    "ramSize", "RAM Size (in GB)",
+    portal.ParameterType.INTEGER,
+    32,
+    longDescription="RAM size (in GB) for the VM."
 )
 
 # Retrieve the bound parameters from the portal context.
@@ -56,20 +70,22 @@ params = pc.bindParameters()
 # Create a request object to start building the RSpec.
 request = pc.makeRequestRSpec()
 
-# Create a LAN object to connect all nodes.
-lan = request.LAN("lan")
-
-
-comp = request.RawPC("node")
+comp = request.XenVM("node")
 comp.disk_image = params.osImage
 if params.hwType:
     comp.hardware_type = params.hwType
+if params.coreCount:
+    comp.cores = params.coreCount
+if params.ramSize:
+    comp.ram = params.ramSize * 1024  # Convert GB to MB
 
 # Add the controller node to the LAN.
 iface_pc = comp.addInterface("if0")
-lan.addInterface(iface_pc)
 iface_pc.component_id = "eth0"
 
+# Create a LAN object to connect all nodes.
+lan = request.LAN("lan")
+lan.addInterface(iface_pc)
 
 # === Finalization ===
 # Print the generated RSpec to the CloudLab portal, which will then use it
