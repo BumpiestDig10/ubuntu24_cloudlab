@@ -1,7 +1,6 @@
 # profile.py: A geni-lib script to deploy ubuntu24.04
 
-"""
-Simple deployment of Ubuntu 24.04.
+"""Simple deployment of Ubuntu 24.04.
 """
 
 #!/usr/bin/env python
